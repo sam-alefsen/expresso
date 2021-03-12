@@ -19,7 +19,7 @@ app.use(cors());
 app.use(morgan('dev'));
 
 //error handling (only necessary for dev environment)
-app.use(errorHandler());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is now listening on PORT ${PORT}`);
