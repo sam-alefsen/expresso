@@ -18,6 +18,10 @@ app.use(cors());
 //morgan
 app.use(morgan('dev'));
 
+//import and mount api router
+const apiRouter = require('./api/api');
+app.use('/api', apiRouter);
+
 //error handling (only necessary for dev environment)
 app.use(errorHandler);
 
