@@ -5,6 +5,20 @@ const employeesRouter = express.Router();
 
 const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite');
 
+//Check employee ID parameter
+employeesRouter.param('employeeId', (req, res, next, employeeId) => {
+  db.get('SELECT * FROM Employee WHERE Employee.id = $employeeId', {$employeeId:employeeId}, (err, row) => {
+    if (err) {
+      next(err);
+    } else if (row) {
+      req.employee = row;
+      next();
+    } else {
+      res.sendStatus(404);
+    };
+  });
+});
+
 //GET all employees
 employeesRouter.get('/', (req, res, next) => {
   db.all(`SELECT * FROM Employee WHERE is_current_employee = 1`, (err, rows) => {
@@ -14,6 +28,11 @@ employeesRouter.get('/', (req, res, next) => {
       res.status(200).json({employees:rows});
     };
   });
+});
+
+//GET employee ID
+employeesRouter.get('/:employeeId', (req, res, next) => {
+  res.status(200).json({employee:req.employee});
 });
 
 //POST all employees
