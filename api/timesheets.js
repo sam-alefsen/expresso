@@ -10,7 +10,7 @@ timesheetsRouter.param('timesheetId', (req, res, next, timesheetId) => {
   db.get(sql, values, (err, timesheet) => {
     if(err) {
       next(err);
-    } else if(row) {
+    } else if(timesheet) {
       req.timesheet = timesheet;
       next();
     } else {
@@ -30,8 +30,7 @@ timesheetsRouter.get('/', (req, res, next) => {
   });
 });
 
-
-//POST new timesheet
+//POST a new timesheet
 timesheetsRouter.post('/', (req, res, next) => {
   const hours = req.body.timesheet.hours,
     rate = req.body.timesheet.rate,
@@ -58,6 +57,41 @@ timesheetsRouter.post('/', (req, res, next) => {
           next(err);
         } else {
           res.status(201).json({timesheet:row});
+        };
+      });
+    };
+  });
+});
+
+//update a timesheet
+timesheetsRouter.put('/:timesheetId', (req, res, next) => {
+  const id = req.params.timesheetId,
+    hours = req.body.timesheet.hours,
+    rate = req.body.timesheet.rate,
+    date = req.body.timesheet.date,
+    employeeId = req.params.employeeId;
+  if(!hours || !rate || !date) {
+    return res.sendStatus(400);
+  };
+
+  const sql = 'UPDATE Timesheet SET hours = $hours, rate = $rate, date = $date WHERE id = $id';
+  const values = {
+    $id:id,
+    $hours:hours,
+    $rate:rate,
+    $date:date
+  };
+
+  db.run(sql, values, (err) => {
+    if(err) {
+      next(err);
+    } else {
+      db.get('SELECT * FROM Timesheet WHERE id = $id', {$id:id}, (err, row) => {
+        if(err) {
+          next(err);
+        } else {
+          console.log(row);
+          res.status(200).json({timesheet:row});
         };
       });
     };
