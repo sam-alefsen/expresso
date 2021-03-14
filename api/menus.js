@@ -40,4 +40,26 @@ menusRouter.get('/:menuId', (req, res, next) => {
   })
 });
 
+//POST a new menu
+menusRouter.post('/', (req, res, next) => {
+  const title = req.body.menu.title;
+  if(!title) {
+    return res.sendStatus(400);
+  };
+
+  db.run('INSERT INTO Menu (title) VALUES ($title)', {$title:title}, function(err) {
+    if(err) {
+      next(err);
+    } else {
+      db.get('SELECT * FROM Menu WHERE id = $lastID', {$lastID:this.lastID}, (err, row) => {
+        if(err) {
+          next(err);
+        } else {
+          res.status(201).json({menu:row});
+        };
+      });
+    }
+  });
+});
+
 module.exports = menusRouter;
