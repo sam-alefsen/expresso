@@ -110,4 +110,39 @@ employeesRouter.put('/:employeeId', (req, res, next) => {
   });
 });
 
+//DELETE an employee (change to no longer current)
+employeesRouter.delete('/:employeeId', (req, res, next) => {
+  const employeeId = req.params.employeeId;
+  db.serialize(() => {
+    
+    //check if employee exists
+    const checkSql = 'SELECT * FROM Employee WHERE id = $employeeId';
+    const values = {$employeeId:employeeId};
+    db.get(checkSql, values, (err, row) => {
+      if(err) {
+        next(err);
+      } else if (row.length > 1) {
+        return res.sendStatus(404);
+      };
+    });
+
+    //set employee as not current
+    const deleteSql = 'UPDATE Employee SET is_current_employee = 0 WHERE id = $employeeId';
+    db.run(deleteSql, values, (err) => {
+      if (err) {
+        next(err);
+      };
+    });
+
+    //GET employee and send response
+    db.get(checkSql, values, (err, row) => {
+      if(err) {
+        next(err);
+      } else {
+        res.status(200).json({employee:row});
+      };
+    });
+  });
+});
+
 module.exports = employeesRouter;
