@@ -30,12 +30,12 @@ employeesRouter.get('/', (req, res, next) => {
   });
 });
 
-//GET employee ID
+//GET employee by ID
 employeesRouter.get('/:employeeId', (req, res, next) => {
   res.status(200).json({employee:req.employee});
 });
 
-//POST all employees
+//POST a new employee
 employeesRouter.post('/', (req, res, next) => {
   const name = req.body.employee.name,
     position = req.body.employee.position,
@@ -60,6 +60,53 @@ employeesRouter.post('/', (req, res, next) => {
           res.status(201).json({employee: employee});
         });
     };
+  });
+});
+
+//Update an employee
+employeesRouter.put('/:employeeId', (req, res, next) => {
+  const name = req.body.employee.name,
+  position = req.body.employee.position,
+  wage = req.body.employee.wage,
+  isCurrentEmployee = req.body.employee.isCurrentEmployee === 0 ? 0 : 1;
+  if(!name || !position || !wage) {
+    return res.sendStatus(400);
+  };
+
+  db.serialize(() => {
+    //check if employee with specified ID exists
+    const checkSql = 'SELECT * FROM Employee WHERE id = $employeeId';
+    const checkValues = {$employeeId:req.params.employeeId};
+    db.get(checkSql, checkValues, (err, row) => {
+      if(err) {
+        next(err);
+      } else if(row.length < 1) {
+        return res.sendStatus(400);
+      };
+    });
+
+    //update employee
+    const putSql = 'UPDATE Employee SET name = $name, position = $position, wage = $wage, is_current_employee = $isCurrentEmployee';
+    const putValues = {
+      $name: name,
+      $position: position,
+      $wage: wage,
+      $isCurrentEmployee: isCurrentEmployee
+    };
+    db.run(putSql, putValues, (err) => {
+      if(err) {
+        next(err);
+      };
+    });
+
+    //GET updated employee and send response
+    db.get(checkSql, checkValues, (err, row) => {
+      if(err) {
+        next(err);
+      } else {
+        res.status(200).json({employee:row});
+      };
+    });
   });
 });
 
