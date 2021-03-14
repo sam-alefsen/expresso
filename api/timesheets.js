@@ -98,4 +98,15 @@ timesheetsRouter.put('/:timesheetId', (req, res, next) => {
   });
 });
 
+//DELETE a timesheet
+timesheetsRouter.delete('/:timesheetId', (req, res, next) => {
+  db.run('DELETE FROM Timesheet WHERE id = $id', {$id:req.params.timesheetId}, (err) => {
+    if(err) {
+      next(err);
+    } else {
+      res.sendStatus(204);
+    };
+  });
+});
+
 module.exports = timesheetsRouter;
