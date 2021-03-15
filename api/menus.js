@@ -59,6 +59,28 @@ menusRouter.post('/', (req, res, next) => {
         };
       });
     }
+  });q
+});
+
+//PUT a menu
+menusRouter.put('/:menuId', (req, res, next) => {
+  const title = req.body.menu.title;
+  if(!title) {
+    res.sendStatus(400);
+  };
+
+  db.run('UPDATE Menu SET title = $title', {$title:title}, (err) => {
+    if (err) {
+      next(err);
+    } else {
+      db.get('SELECT * FROM Menu WHERE id = $menuId', {$menuId:req.params.menuId}, (err, row) => {
+        if(err) {
+          next(err);
+        } else {
+          res.status(200).json({menu:row});
+        };
+      });
+    };
   });
 });
 
