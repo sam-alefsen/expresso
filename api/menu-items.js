@@ -29,4 +29,36 @@ menuItemsRouter.get('/', (req, res, next) => {
   });
 });
 
+//POST a new menu item
+menuItemsRouter.post('/', (req, res, next) => {
+  const name = req.body.menuItem.name,
+    description = req.body.menuItem.description,
+    inventory = req.body.menuItem.inventory,
+    price = req.body.menuItem.price,
+    menuId = req.params.menuId;
+  if(!name || !inventory || !price) {
+    return res.sendStatus(400);
+  };
+  
+  db.serialize(() => {
+    const sql = 'INSERT INTO MenuItem (name, description, inventory, price, menu_id) VALUES ($name, $description, $inventory, $price, $menuId)';
+    const values = {
+      $name:name,
+      $description:description,
+      $inventory:inventory,
+      $price:price,
+      $menuId:menuId
+    };
+    db.run(sql, values, function(err) {
+      if(err) {
+        next(err);
+      } else {
+        db.get('SELECT * FROM MenuItem WHERE id = $lastID', {$lastID:this.lastID}, (err, row) => {
+          res.status(201).json({menuItem:row});
+        });
+      };
+    });
+  });
+});
+
 module.exports = menuItemsRouter;
