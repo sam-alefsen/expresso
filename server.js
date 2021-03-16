@@ -1,5 +1,5 @@
 const cors = require('cors')
-  , errorHandler = require('error-handler')
+  , errorHandler = require('errorhandler')
   , express = require('express')
   , morgan = require('morgan');
 
