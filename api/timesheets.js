@@ -68,8 +68,7 @@ timesheetsRouter.put('/:timesheetId', (req, res, next) => {
   const id = req.params.timesheetId,
     hours = req.body.timesheet.hours,
     rate = req.body.timesheet.rate,
-    date = req.body.timesheet.date,
-    employeeId = req.params.employeeId;
+    date = req.body.timesheet.date;
   if(!hours || !rate || !date) {
     return res.sendStatus(400);
   };
@@ -90,7 +89,6 @@ timesheetsRouter.put('/:timesheetId', (req, res, next) => {
         if(err) {
           next(err);
         } else {
-          console.log(row);
           res.status(200).json({timesheet:row});
         };
       });

@@ -1,6 +1,8 @@
-const express = require('express'),
-  sqlite3 = require('sqlite3');
+const express = require('express')
+  , sqlite3 = require('sqlite3');
+
 const menusRouter = express.Router();
+
 const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite');
 
 //Check menu ID parameter
@@ -16,10 +18,10 @@ menusRouter.param('menuId', (req, res, next, menuId) => {
     };
   });
 });
-
+/*
 //import and mount router
 const menuItemsRouter = require('./menu-items');
-menusRouter.use('/:menuId/menu-items', menuItemsRouter);
+menusRouter.use('/:menuId/menu-items', menuItemsRouter);*/
 
 //GET all menus
 menusRouter.get('/', (req, res, next) => {
@@ -63,44 +65,37 @@ menusRouter.post('/', (req, res, next) => {
         };
       });
     }
-  });q
+  });
 });
 
 //PUT a menu
 menusRouter.put('/:menuId', (req, res, next) => {
-  const title = req.body.menu.title;
+  const menuId = req.params.menuId
+    ,  title = req.body.menu.title;
   if(!title) {
     res.sendStatus(400);
   };
 
-  db.run('UPDATE Menu SET title = $title', {$title:title}, (err) => {
-    if (err) {
-      next(err);
-    } else {
-      db.get('SELECT * FROM Menu WHERE id = $menuId', {$menuId:req.params.menuId}, (err, row) => {
-        if(err) {
-          next(err);
-        } else {
-          res.status(200).json({menu:row});
-        };
-      });
-    };
+  db.serialize(() => {
+    db.run('UPDATE Menu SET title = $title', {$title:title}, (err) => {
+      if(err) {
+        next(err);
+      }
+    });
+
+    db.get('SELECT * FROM Menu WHERE id = $menuId', {$menuId:menuId}, (err, row) => {
+      if(err) {
+        next(err);
+      } else {
+        res.status(200).json({menu:row});
+      };
+    });
   });
 });
 
 //DELETE a menu
 menusRouter.delete('/:menuId', (req, res, next) => {
   const menuId = req.params.menuId;
-  /*
-  db.all('SELECT * FROM MenuItem WHERE menu_id = $menuId', {$menuId:menuId}, (err, rows) => {
-    if(err) {
-      next(err);
-    } else if(rows.length < 1) {
-      return res.sendStatus(400);
-    };
-  });
-  */
-
   db.run('DELETE FROM Menu WHERE id = $menuId', {$menuId:menuId}, (err) => {
     if(err) {
       next(err);
