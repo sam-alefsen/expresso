@@ -70,37 +70,44 @@ menusRouter.post('/', (req, res, next) => {
 
 //PUT a menu
 menusRouter.put('/:menuId', (req, res, next) => {
-  const menuId = req.params.menuId
-    ,  title = req.body.menu.title;
-  if(!title) {
-    res.sendStatus(400);
-  };
+  const title = req.body.menu.title,
+    menuId = req.params.menuId;
+  if (!title) {
+    return res.sendStatus(400);
+  }
 
-  db.serialize(() => {
-    db.run('UPDATE Menu SET title = $title', {$title:title}, (err) => {
+    db.run('UPDATE Menu SET title = $title WHERE id = $menuId', {
+      $title:title,
+      $menuId:menuId
+    },(err) => {
       if(err) {
         next(err);
-      }
-    });
-
-    db.get('SELECT * FROM Menu WHERE id = $menuId', {$menuId:menuId}, (err, row) => {
-      if(err) {
-        next(err);
-      } else {
-        res.status(200).json({menu:row});
       };
     });
-  });
+    db.get('SELECT * FROM Menu WHERE id = $menuId', {$menuId:menuId}, (err, row) => {
+        res.status(200).json({menu:row});
+    });
+
 });
+
 
 //DELETE a menu
 menusRouter.delete('/:menuId', (req, res, next) => {
   const menuId = req.params.menuId;
-  db.run('DELETE FROM Menu WHERE id = $menuId', {$menuId:menuId}, (err) => {
+
+  db.all(`SELECT * FROM MenuItem WHERE menu_id = ${menuId}`, (err, menuItems) => {
     if(err) {
       next(err);
+    } else if(menuItems.length > 0) {
+      return res.sendStatus(400); 
     } else {
-      res.sendStatus(204);
+      db.run(`DELETE FROM Menu WHERE id = ${menuId}`, (err) => {
+        if(err) {
+          next(err);
+        } else {
+          res.sendStatus(204);
+        };
+      });
     };
   });
 });
