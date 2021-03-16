@@ -17,6 +17,10 @@ menusRouter.param('menuId', (req, res, next, menuId) => {
   });
 });
 
+//import and mount router
+const menuItemsRouter = require('./menu-items');
+menusRouter.use('/:menuId/menu-items', menuItemsRouter);
+
 //GET all menus
 menusRouter.get('/', (req, res, next) => {
   db.all('SELECT * FROM Menu', (err, rows) => {
@@ -80,6 +84,28 @@ menusRouter.put('/:menuId', (req, res, next) => {
           res.status(200).json({menu:row});
         };
       });
+    };
+  });
+});
+
+//DELETE a menu
+menusRouter.delete('/:menuId', (req, res, next) => {
+  const menuId = req.params.menuId;
+  /*
+  db.all('SELECT * FROM MenuItem WHERE menu_id = $menuId', {$menuId:menuId}, (err, rows) => {
+    if(err) {
+      next(err);
+    } else if(rows.length < 1) {
+      return res.sendStatus(400);
+    };
+  });
+  */
+
+  db.run('DELETE FROM Menu WHERE id = $menuId', {$menuId:menuId}, (err) => {
+    if(err) {
+      next(err);
+    } else {
+      res.sendStatus(204);
     };
   });
 });
