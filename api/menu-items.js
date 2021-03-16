@@ -1,4 +1,3 @@
-/*
 const express = require('express'),
   sqlite3 = require('sqlite3');
 const menuItemsRouter = express.Router({mergeParams:true});
@@ -20,7 +19,8 @@ menuItemsRouter.param('menuItemId', (req, res, next, menuItemId) => {
 
 //GET all menu items
 menuItemsRouter.get('/', (req, res, next) => {
-  db.all('SELECT * FROM MenuItem WHERE menu_id = $menuId', {$menuId:req.params.menuItemId}, (err, rows) => {
+  const menuId = req.params.menuId;
+  db.all('SELECT * FROM MenuItem WHERE menu_id = $menuId', {$menuId:menuId}, (err, rows) => {
     if(err) {
       next(err);
     } else {
@@ -30,4 +30,3 @@ menuItemsRouter.get('/', (req, res, next) => {
 });
 
 module.exports = menuItemsRouter;
-*/

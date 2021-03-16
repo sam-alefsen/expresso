@@ -18,10 +18,10 @@ menusRouter.param('menuId', (req, res, next, menuId) => {
     };
   });
 });
-/*
+
 //import and mount router
 const menuItemsRouter = require('./menu-items');
-menusRouter.use('/:menuId/menu-items', menuItemsRouter);*/
+menusRouter.use('/:menuId/menu-items', menuItemsRouter);
 
 //GET all menus
 menusRouter.get('/', (req, res, next) => {
