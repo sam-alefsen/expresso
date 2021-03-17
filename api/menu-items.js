@@ -5,7 +5,7 @@ const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite'
 
 //check menu items ID parameter
 menuItemsRouter.param('menuItemId', (req, res, next, menuItemId) => {
-  db.get('SELECT * FROM MenuItem WHERE menuItmeId = $menuItemId', {$menuItemId:menuItemId}, (err, row) => {
+  db.get('SELECT * FROM MenuItem WHERE id = $menuItemId', {$menuItemId:menuItemId}, (err, row) => {
     if(err) {
       next(err);
     } else if (row) {
@@ -56,6 +56,42 @@ menuItemsRouter.post('/', (req, res, next) => {
         db.get('SELECT * FROM MenuItem WHERE id = $lastID', {$lastID:this.lastID}, (err, row) => {
           res.status(201).json({menuItem:row});
         });
+      };
+    });
+  });
+});
+
+//Update a menu item
+menuItemsRouter.put('/:menuItemId', (req, res, next) => {
+  const id = req.params.menuItemId,
+    name = req.body.menuItem.name,
+    description = req.body.menuItem.description,
+    inventory = req.body.menuItem.inventory,
+    price = req.body.menuItem.price;
+  if(!name || !inventory || !price) {
+    return res.sendStatus(400);
+  };
+
+  db.serialize(() => {
+    const sql = 'UPDATE MenuItem SET name = $name, description = $description, inventory = $inventory, price = $price WHERE id = $id';
+    const values = {
+      $name:name,
+      $description:description,
+      $inventory:inventory,
+      $price:price,
+      $id:id
+    };
+    db.run(sql, values, (err) => {
+      if(err) {
+        next(err);
+      };
+    });
+
+    db.get('SELECT * FROM MenuItem WHERE id = $id', {$id:id}, (err, row) => {
+      if(err) {
+        next(err);
+      } else {
+        res.status(200).json({menuItem:row});
       };
     });
   });
